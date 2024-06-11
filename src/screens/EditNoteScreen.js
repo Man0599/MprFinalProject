@@ -60,13 +60,22 @@ export default function EditNoteScreen({ route, navigation }) {
   const { notes, labels, folders } = context;
   const [content, setContent] = useState(note.content);
   const contentRef = useRef();
+  const debounceTimeoutRef = useRef(null);
 
-  const updateContent = () => {
-    context.updateNote(noteId, {
-      ...note,
-      content: content,
-      updatedAt: new Date().toISOString(),
-    });
+  const handleTextChange = (text) => {
+    setContent(text);
+
+    if (debounceTimeoutRef.current) {
+      clearTimeout(debounceTimeoutRef.current);
+    }
+
+    debounceTimeoutRef.current = setTimeout(() => {
+      context.updateNote(noteId, {
+        ...note,
+        content: text,
+        updatedAt: new Date().toISOString(),
+      });
+    }, 300);
   };
   const time = (date) => {
     const updatedAt = new Date(date);
@@ -108,10 +117,7 @@ export default function EditNoteScreen({ route, navigation }) {
         <TextInput
           placeholder="Update the text here"
           value={content}
-          onChangeText={(text) => {
-            setContent(text);
-            updateContent();
-          }}
+          onChangeText={handleTextChange}
           style={{
             fontSize: 16,
             borderWidth: 1,
